@@ -36,7 +36,7 @@ COLORS = {"black": 0, "blue": 1, "green": 2, "red": 4, "bright_green": 10, "yell
           "medium_blue": 73, "bright_light_orange": 191, "dark_blue": 272, "dark_green": 288,
           "dark_red": 320, "dark_azure": 321, "medium_azure": 322, "coral": 353, "sand_green": 378,
           "trans_red": 36, "trans_black": 40, "trans_light_blue": 43, "trans_yellow": 46, "trans_clear": 47}
-COMMON = {0, 1, 2, 4, 14, 15, 19, 25, 28, 70, 71, 72, 191, 272, 288, 320, 321, 36, 40, 43, 47}
+COMMON = {0, 1, 2, 4, 10, 14, 15, 19, 25, 28, 70, 71, 72, 191, 272, 288, 320, 321, 36, 40, 43, 47}
 
 ISO = math.degrees(math.atan(1 / math.sqrt(2)))  # true isometric elevation, 35.26 degrees
 VIEWS = {  # (azimuth, elevation) in degrees; azimuth 0 = camera in front (-Z), 90 = on the right (+X)
@@ -46,6 +46,11 @@ VIEWS = {  # (azimuth, elevation) in degrees; azimuth 0 = camera in front (-Z), 
 
 _ROT = {0: np.eye(3), 90: np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]], float),
         180: np.diag([-1.0, 1, -1]), 270: np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]], float)}
+
+# Mirror image of a part: left/right twins swap; parts symmetric only front-to-back turn the other way.
+TWINS = {"24299": "24307", "24307": "24299", "43722": "43723", "43723": "43722",
+         "41769": "41770", "41770": "41769"}
+Z_SYMMETRIC = {"3633"}
 
 
 def list_colors():
@@ -59,6 +64,30 @@ def list_colors():
 def color_name(code):
     pal = ldraw.colours()
     return pal[code][0] if code in pal else str(code)
+
+
+def footprint(pid, rot=0):
+    """(w, d) in studs of a part at a rotation."""
+    p = Part(pid, 0, 0, 0, 0, rot, None)
+    return p.w, p.d
+
+
+def _turn(x, z, heading):
+    """Rotate a grid point about the origin like an LDraw rotation of `heading` degrees about Y."""
+    c, s = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[heading % 360]
+    return x * c + z * s, -x * s + z * c
+
+
+def local_rects(specs, at, heading=0):
+    """World footprints (x, z, w, d) of local-frame specs, see Model.place_local."""
+    rects = []
+    for pid, _, lx, lz, _, rot in specs:
+        w, d = footprint(pid, rot)
+        pts = [_turn(px, pz, heading) for px in (lx, lx + w) for pz in (lz, lz + d)]
+        x0, z0 = min(p[0] for p in pts), min(p[1] for p in pts)
+        rects.append((x0, z0, max(p[0] for p in pts) - x0, max(p[1] for p in pts) - z0))
+    gx, gz = min(r[0] for r in rects), min(r[1] for r in rects)
+    return [(at[0] + x - gx, at[1] + z - gz, w, d) for x, z, w, d in rects]
 
 
 class _Shape:
@@ -112,18 +141,19 @@ def _inside(hull, pts, margin=1.0):
 
 
 class Part:
-    __slots__ = ("pid", "color", "x", "z", "level", "rot", "group", "w", "d", "h", "R", "pos")
+    __slots__ = ("pid", "color", "x", "z", "level", "rot", "group", "w", "d", "h", "R", "pos", "parent")
 
     def __init__(self, pid, color, x, z, level, rot, group):
         s = shape(pid)
         self.pid, self.color, self.x, self.z, self.level, self.rot, self.group = pid, color, x, z, level, rot, group
+        self.parent = None
         self.R = _ROT[rot % 360]
         corners = np.array([[a, b, c] for a in (s.bmin[0], s.bmax[0]) for b in (s.bmin[1], s.bmax[1])
                             for c in (s.bmin[2], s.bmax[2])]) @ self.R.T
         rmin, rmax = corners.min(0), corners.max(0)
         self.w = round((rmax[0] - rmin[0]) / STUD * 2) / 2
         self.d = round((rmax[2] - rmin[2]) / STUD * 2) / 2
-        self.h = round((rmax[1] - rmin[1]) / PLATE)
+        self.h = round((rmax[1] - rmin[1]) / PLATE * 2) / 2   # baseplates are half a plate thick
         self.pos = np.array([x * STUD - rmin[0], -level * PLATE - rmax[1], z * STUD - rmin[2]])
 
     @property
@@ -153,9 +183,43 @@ class Model:
         """specs: iterable of (pid, color, x, z, level[, rot])."""
         return [self.add_part(*spec, group=group) for spec in specs]
 
+    def add_inset(self, pid, color, parent, group=None):
+        """A part held inside another one (glass in a window frame): same transform, joined to it."""
+        p = Part(pid, COLORS.get(color, color), parent.x, parent.z, parent.level, parent.rot, group or self.group)
+        p.pos, p.R, p.parent = parent.pos.copy(), parent.R, parent
+        self.parts.append(p)
+        return p
+
+    def place_local(self, specs, at, heading=0, level=0, group=None):
+        """Place parts given in a local frame (+z = forward) turned by `heading` degrees.
+
+        specs: (pid, color, lx, lz, dlevel, rot); `at` is where the minimum corner of the
+        turned group lands; dlevel is added to `level`.
+        """
+        return [self.add_part(spec[0], spec[1], x, z, level + spec[4], (spec[5] + heading) % 360, group)
+                for spec, (x, z, _, _) in zip(specs, local_rects(specs, at, heading))]
+
     def remove(self, parts):
         drop = {id(p) for p in parts}
         self.parts = [p for p in self.parts if id(p) not in drop]
+
+    def mirror_z(self, depth):
+        """Reflect the layout front to back (z -> depth - z) using real parts only.
+
+        A part symmetric left-to-right maps to itself turned by 180 - rot; left/right
+        twins swap; parts in Z_SYMMETRIC map to themselves turned by -rot.
+        """
+        for i, p in enumerate(self.parts):
+            if p.parent is not None:
+                continue
+            rot = (-p.rot) % 360 if p.pid in Z_SYMMETRIC else (180 - p.rot) % 360
+            q = Part(TWINS.get(p.pid, p.pid), p.color, p.x, depth - p.z - p.d, p.level, rot, p.group)
+            for slot in Part.__slots__:
+                if slot != "parent":
+                    setattr(p, slot, getattr(q, slot))
+        for p in self.parts:
+            if p.parent is not None:
+                p.pos, p.R, p.x, p.z, p.rot = p.parent.pos.copy(), p.parent.R, p.parent.x, p.parent.z, p.parent.rot
 
     def fill_layers(self, region, levels, color, kind="plate", exclude=(), group=None, sizes=None,
                     seams=None, below=(), max_len=None):
@@ -227,18 +291,21 @@ class Model:
     @staticmethod
     def _connect_data(p):
         """World stud keys, receptor keys and occupied half-stud cells of one part."""
+        if p.parent is not None:  # held by its parent: joined in check(), no volume of its own
+            return [], [], set()
         s = shape(p.pid)
         hull = p.world(np.c_[s.hull[:, 0], np.zeros(len(s.hull)), s.hull[:, 1]])[:, [0, 2]]
         bottom = int(round(-p.level * PLATE))
         # occupancy: half-stud cells whose centre is inside the part outline, every plate level
         hx = np.arange(round(p.x * 2), round((p.x + p.w) * 2))
         hz = np.arange(round(p.z * 2), round((p.z + p.d) * 2))
-        half = np.array([(a, b) for a in hx for b in hz])
+        half = np.array([(a, b) for a in hx for b in hz]).reshape(-1, 2)
         inside = _inside(hull, (half + 0.5) * STUD / 2, 0.5)
-        occ = {(int(a), int(b), lv) for a, b in half[inside] for lv in range(p.level, p.level + p.h)}
+        levels = range(math.floor(p.level), math.ceil(p.level + p.h))
+        occ = {(int(a), int(b), lv) for a, b in half[inside] for lv in levels}
         # receptors: anti-stud cells under the outline plus hollow tubes, at the part bottom
         cells = np.array([(p.x + i + 0.5, p.z + j + 0.5) for i in range(int(round(p.w)))
-                          for j in range(int(round(p.d)))]) * STUD
+                          for j in range(int(round(p.d)))]).reshape(-1, 2) * STUD
         rec = [(int(round(x)), bottom, int(round(z))) for x, z in cells[_inside(hull, cells, 2.0)]]
         if len(s.tubes):
             rec += [(int(round(t[0])), bottom, int(round(t[2]))) for t in p.world(s.tubes)]
@@ -264,6 +331,12 @@ class Model:
                     if j != i:
                         adj[i].add(j)
                         adj[j].add(i)
+        index = {id(p): i for i, p in enumerate(self.parts)}
+        for i, p in enumerate(self.parts):
+            if p.parent is not None and id(p.parent) in index:
+                j = index[id(p.parent)]
+                adj[i].add(j)
+                adj[j].add(i)
         comp, comps = [-1] * len(self.parts), []
         for i in range(len(self.parts)):
             if comp[i] >= 0:
@@ -304,6 +377,16 @@ class Model:
             out.append("0 STEP")
         with open(path, "w", newline="\r\n") as f:
             f.write("\n".join(out) + "\n")
+        return path
+
+    def export_bom(self, path):
+        """Parts list as CSV: LDraw part number, official name, colour, quantity."""
+        inv = Counter((p.pid, p.color) for p in self.parts)
+        rows = ["peca;nome;cor;codigo_cor_ldraw;quantidade"]
+        for (pid, col), n in sorted(inv.items(), key=lambda kv: (kv[0][0], color_name(kv[0][1]))):
+            rows.append(f"{pid};{shape(pid).title};{color_name(col)};{col};{n}")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(rows) + "\n")
         return path
 
     # ----------------------------------------------------------------- render

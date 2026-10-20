@@ -73,15 +73,28 @@ def _refs(path):
     return out
 
 
-def prefetch(names, workers=16):
-    """Download a set of parts and, breadth first, everything they reference."""
-    seen, frontier = set(), [n.lower() for n in names]
+def prefetch(names, workers=16, strict=True):
+    """Download a set of parts and, breadth first, everything they reference.
+
+    With strict=False, names missing from the library are skipped and returned.
+    """
+    def get(name):
+        try:
+            return resolve(name)
+        except FileNotFoundError:
+            if strict:
+                raise
+            return None
+
+    seen, missing, frontier = set(), [], [n.lower() for n in names]
     with ThreadPoolExecutor(workers) as pool:
         while frontier:
             frontier = [n for n in dict.fromkeys(frontier) if n not in seen]
             seen.update(frontier)
-            paths = list(pool.map(resolve, frontier))
-            frontier = [r.lower() for p in paths for r in _refs(p)]
+            paths = list(pool.map(get, frontier))
+            missing += [n for n, p in zip(frontier, paths) if p is None]
+            frontier = [r.lower() for p in paths if p for r in _refs(p)]
+    return missing
 
 
 class Geometry:
