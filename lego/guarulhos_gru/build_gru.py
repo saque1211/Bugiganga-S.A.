@@ -1,16 +1,17 @@
 """Aeroporto Internacional de Guarulhos (GRU) em microescala LEGO, como maquete de arquitetura.
 
-Sem aviões: quem identifica GRU é o próprio sítio, como nas fotos aéreas. Pistas 10L/28R
-(3.700 m, a do norte) e 10R/28L (3.000 m), a 375 m uma da outra; duas taxiways paralelas;
-pátios de concreto em placas. De oeste para leste: terminal de cargas (TECA) e Terminal 1;
-Terminal 2 com os dois módulos de telhado escuro em sheds (ex-TPS1 e TPS2, com a dobra entre
-eles), a torre de escritórios listrada e os dois píeres com a cabeceira branca; o píer remoto de
-cobertura branca; a torre de controle; o Terminal 3 com o píer comprido e o edifício-garagem;
-hangares e bombeiros. No lado terra, o viaduto de embarque, as passarelas cobertas verdes, os
-estacionamentos lotados com faixas de mata, o parque de combustível e a Rodovia Hélio Smidt;
-em volta, os bairros de Guarulhos e, ao sul das pistas, a Base Aérea de São Paulo.
+Sem aviões e sem a cidade em volta: o aeroporto ocupa a base inteira, como nas fotos aéreas.
+Pistas 10L/28R (3.700 m, a do norte) e 10R/28L (3.000 m), a cerca de 375 m uma da outra; duas
+taxiways paralelas; pátios de concreto em placas com pistas de táxi de asfalto. De oeste para
+leste: terminal de cargas (TECA) e Terminal 1; Terminal 2 com os dois módulos de telhado escuro
+em sheds (ex-TPS1 e TPS2, com a dobra entre eles), a torre de escritórios listrada e os dois
+píeres com a cabeceira branca; o píer remoto de cobertura branca; a torre de controle; o
+corredor até o Terminal 3, com o píer comprido e o edifício-garagem; bombeiros, hangares e a
+área de manutenção. No lado terra, o viaduto de embarque, as passarelas cobertas verdes, os
+estacionamentos lotados com a faixa de mata, o pátio de carretas, o parque de combustível, a
+locadora de carros e a Rodovia Hélio Smidt.
 
-Grade: x 0..96 de oeste para leste, z 0..64 de sul para norte (o fundo do LDraw, +z, é o
+Grade: x 0..96 de oeste para leste, z 0..48 de sul para norte (o fundo do LDraw, +z, é o
 norte, então a vista de cima fica com o norte para cima). Alturas em plates com o topo das
 baseplates no nível 0; pavimento é tile de 1 plate. Cerca de 40 m por stud nas pistas, prédios
 um pouco ampliados e alturas exageradas umas duas vezes, como numa maquete.
@@ -27,7 +28,7 @@ sys.path.insert(0, HERE)
 import brickkit as bk  # noqa: E402
 
 RENDERS = os.path.join(HERE, "renders")
-WIDTH, DEPTH = 96, 64
+WIDTH, DEPTH = 96, 48
 
 TILE_ROW = {n: bk.TILES[(1, n)] for n in (1, 2, 3, 4, 6, 8)}
 PLATE_ROW = {n: bk.PLATES[(1, n)] for n in (1, 2, 3, 4, 6, 8, 10, 12)}
@@ -37,14 +38,15 @@ GRILLE_ROW = {1: "3070b", 2: "2412b"}
 VENT_ROW = {1: "3005", 2: "2877"}
 SMALL_TILES = {(1, 1), (1, 2), (1, 3), (1, 4), (1, 6), (1, 8), (2, 2), (2, 3), (2, 4), (2, 6)}
 
-STAGES = ["1 base, pistas e taxiways", "2 pátios", "3 terminais", "4 torre e lado ar", "5 lado terra", "6 cidade"]
-SLUG = ["base_pistas", "patios", "terminais", "torre_lado_ar", "lado_terra", "cidade"]
+STAGES = ["1 base, pistas e taxiways", "2 pátios", "3 terminais", "4 torre e lado ar", "5 lado terra"]
+SLUG = ["base_pistas", "patios", "terminais", "torre_lado_ar", "lado_terra"]
 VIEW = (-125, 36)        # do noroeste, sobre o lado terra, como a primeira foto aérea
 SUN = (140, 45)          # sol do norte (hemisfério sul), um pouco a leste
 
 CAR_COLORS = ["white"] * 40 + ["lbg"] * 35 + ["black"] * 8 + ["dbg"] * 5 + ["dark_red"] * 5 + \
              ["dark_blue"] * 4 + ["red"] * 3
 ROW_COLORS = ["lbg"] * 5 + ["white"] * 3 + ["dbg"] * 2
+GSE_COLORS = ["white"] * 3 + ["lbg"] * 2 + ["dbg"]
 
 
 # ------------------------------------------------------------------------ helpers
@@ -52,11 +54,13 @@ def rect(x0, z0, x1, z1):
     return {(x, z) for x in range(x0, x1) for z in range(z0, z1)}
 
 
-# pátios: pistas de táxi em asfalto (faixa ao sul e entre os píeres) e o resto em concreto
-TAXILANES = (rect(1, 22, 85, 23) | rect(26, 23, 28, 32) | rect(37, 23, 39, 32) | rect(49, 23, 51, 33)
-             | rect(60, 23, 62, 37) | rect(76, 23, 78, 34))
-APRON = (rect(1, 22, 17, 29) | rect(17, 22, 26, 30) | rect(26, 22, 39, 32) | rect(39, 22, 52, 33)
-         | rect(52, 22, 58, 37) | rect(58, 22, 72, 37) | rect(72, 22, 85, 34) | rect(85, 22, 94, 25))
+# asfalto do pátio: a pista de táxi ao sul, as faixas entre os píeres e a via de serviço junto ao T2
+ASPHALT = (rect(0, 15, 96, 16) | rect(26, 16, 28, 27) | rect(37, 16, 39, 27) | rect(49, 16, 51, 28)
+           | rect(60, 16, 62, 32) | rect(76, 16, 78, 27) | rect(26, 26, 39, 27) | rect(39, 27, 52, 28))
+# o resto dos pátios em placas de concreto (os prédios já estão no lugar quando o pavimento entra)
+APRON = (rect(0, 16, 17, 22) | rect(0, 22, 2, 30) | rect(16, 22, 17, 29) | rect(17, 16, 26, 29)
+         | rect(26, 16, 39, 27) | rect(39, 16, 52, 28) | rect(52, 16, 58, 32) | rect(58, 16, 72, 32)
+         | rect(72, 16, 96, 30))
 
 
 def run(m, a0, a1, fixed, level, color, marks=(), along="x", catalog=TILE_ROW, skip=()):
@@ -91,7 +95,7 @@ def free(m, cells):
     return set(cells) - m.ground_cells()
 
 
-def pave(m, cells, color, big=(4, 4), origin=(2, 2), sizes=SMALL_TILES):
+def pave(m, cells, color, big=(4, 4), origin=(2, 0), sizes=SMALL_TILES):
     """Pavimento de tiles nas células livres: placas grandes alinhadas numa grade (juntas
     regulares, como concreto), o resto com as maiores que couberem."""
     cells = free(m, cells)
@@ -127,6 +131,12 @@ def box_walls(m, x0, z0, x1, z1, level, south, north, side="lbg"):
         run(m, z0 + 1, z1 - 1, x, level, side, along="z", catalog=BRICK_ROW)
 
 
+def shed(m, x0, z0, w, wall="lbg", roof="white"):
+    """Galpão baixo de 2 x w: tijolos e telhado de tiles."""
+    m.add_part(bk.BRICKS[(2, w)], wall, x0, z0, 0)
+    m.add_part(bk.TILES[(2, w)], roof, x0, z0, 3)
+
+
 def mast(m, x, z):
     """Torre de iluminação do pátio: barra de 3 numa placa redonda de pino aberto."""
     base = m.add_part("85861", "lbg", x, z, 0)
@@ -143,7 +153,7 @@ def tree(m, x, z, level=0, big=False, color=None):
         m.add_part("6141", color, x, z, level)
 
 
-def cars(m, rng, x0, x1, z, skip=(), level=0):
+def cars(m, rng, x0, x1, z, skip=(), level=0, colors=CAR_COLORS, rows=ROW_COLORS):
     """Fileira de carros estacionados vista do alto: grelhas 1x2 (o friso faz a fila de carros)
     e tiles 1x1 nas cores da frota, quase sem vaga livre."""
     x = x0
@@ -152,10 +162,10 @@ def cars(m, rng, x0, x1, z, skip=(), level=0):
             x += 1
             continue
         if x + 1 < x1 and x + 1 not in skip and rng.random() < 0.55:
-            m.add_part("2412b", rng.choice(ROW_COLORS), x, z, level)
+            m.add_part("2412b", rng.choice(rows), x, z, level)
             x += 2
         else:
-            m.add_part("3070b", rng.choice(CAR_COLORS), x, z, level)
+            m.add_part("3070b", rng.choice(colors), x, z, level)
             x += 1
 
 
@@ -173,47 +183,52 @@ def runway(m, x0, x1, z0):
 
 def stage_base(m):
     m.group = STAGES[0]
-    for x in (0, 32, 64):
-        for z in (0, 32):
-            m.add_part("3811", "green", x, z, -0.5)
-    runway(m, 2, 94, 16)                        # 10L/28R, 3.700 m
-    runway(m, 12, 87, 6)                        # 10R/28L, 3.000 m
+    m.add_part("4186", "green", 0, 0, -0.5)
+    m.add_part("4186", "green", 48, 0, -0.5)
+    run(m, 0, WIDTH, 0, 0, "dbg")               # via perimetral ao sul
+    runway(m, 2, 94, 9)                         # 10L/28R, 3.700 m
+    runway(m, 12, 87, 1)                        # 10R/28L, 3.000 m
     for x in (17, 33, 50, 67, 83):              # cruzamentos entre as pistas
-        run(m, 8, 16, x, 0, "lbg", along="z")
+        run(m, 3, 9, x, 0, "lbg", along="z")
     exits = (8, 24, 38, 47, 61, 74, 88)
-    for z in (19, 21):                          # taxiways paralelas e saídas rápidas da 10L
+    for z in (12, 14):                          # taxiways paralelas e saídas rápidas da 10L
         run(m, 3, 93, z, 0, "lbg")
     for x in exits:
-        m.add_part("3070b", "lbg", x, 18, 0)
-        m.add_part("3070b", "lbg", x, 20, 0)
-    for x0, x1, z in ((9, 17, 20), (25, 37, 20), (48, 56, 20), (62, 73, 20), (75, 85, 20),
-                      (26, 32, 18), (52, 60, 18), (18, 23, 8), (68, 74, 15), (34, 40, 15)):
+        m.add_part("3070b", "lbg", x, 11, 0)
+        m.add_part("3070b", "lbg", x, 13, 0)
+    for x0, x1, z in ((9, 17, 13), (25, 37, 13), (48, 56, 13), (62, 73, 13), (75, 85, 13), (26, 32, 11),
+                      (52, 60, 11), (18, 23, 3), (40, 46, 3), (34, 40, 8), (56, 62, 8), (68, 74, 8)):
         run(m, x0, x1, z, 0, "dark_orange", catalog=PLATE_ROW, skip=exits)   # terra vermelha
-    for x, z in ((3, 6), (3, 7), (6, 6), (6, 7), (9, 6), (9, 7), (89, 6), (89, 7), (92, 6), (92, 7),
-                 (95, 6), (95, 7), (0, 16), (0, 17), (95, 16), (95, 17)):
+    for x, z in ((3, 1), (3, 2), (6, 1), (6, 2), (9, 1), (9, 2), (89, 1), (89, 2), (92, 1), (92, 2),
+                 (95, 1), (95, 2), (0, 9), (0, 10), (95, 9), (95, 10)):
         m.add_part("98138", "white", x, z, 0)  # luzes de aproximação
+    for x, z in ((11, 6), (84, 6), (19, 4), (80, 4)):
+        m.add_part("3062b", "white", x, z, 0)  # antenas de rampa do ILS, junto ao ponto de toque
+        m.add_part("6141", "red", x, z, 3)
 
 
 # ------------------------------------------------------------------------ 3 terminais
 def t2_module(m, x0, x1, z0, tower=()):
-    """Módulo do T2, 4 de fundo: fachada do pátio em concreto e vidro, fachada do meio-fio
-    de vidro, telhado de sheds escuros com faixas claras entre as baias e o conector claro
-    ao longo do lado ar."""
+    """Módulo do T2, 4 de fundo. No térreo, a fachada do pátio em concreto e vidro, a do
+    meio-fio em vidro sob a marquise branca e o conector claro ao longo do lado ar; no meio, o
+    volume mais alto com janelas altas e o telhado de sheds escuros com faixas claras entre
+    as baias."""
     windows = [(x, x + 2, "trans_black", GLASS_ROW) for x in range(x0 + 2, x1 - 2, 4)]
     run(m, x0, x1, z0, 0, "lbg", windows, catalog=BRICK_ROW)
     for z in (z0 + 1, z0 + 2):
         run(m, x0, x1, z, 0, "lbg", catalog=BRICK_ROW)
     glass(m, x0, x1, z0 + 3, 0)
     run(m, x0, x1, z0, 3, "lbg")
+    run(m, x0, x1, z0 + 3, 3, "white")
+    run(m, x0, x1, z0 + 1, 3, "lbg", catalog=BRICK_ROW)
+    glass(m, x0, x1, z0 + 2, 3)
     for x in range(x0, x1):
-        band = (x - x0) % 4 == 3
-        if x in tower:                                     # só a fileira da frente do telhado
-            m.add_part("3070b" if band else "54200", "lbg" if band else "dbg", x, z0 + 3, 3, 0 if band else 90)
-        elif band:
-            m.add_part("63864", "lbg", x, z0 + 1, 3, 90)
+        if x in tower:
+            continue
+        if (x - x0) % 4 == 3:
+            m.add_part("3069b", "lbg", x, z0 + 1, 6, 90)
         else:
-            m.add_part("85984", "dbg", x, z0 + 1, 3, 90)
-            m.add_part("54200", "dbg", x, z0 + 3, 3, 90)
+            m.add_part("85984", "dbg", x, z0 + 1, 6, 90)
 
 
 def pier(m, x0, z_tip, z_root, west=(), east=(), roof="dbg"):
@@ -232,64 +247,75 @@ def pier(m, x0, z_tip, z_root, west=(), east=(), roof="dbg"):
 
 
 def pier_head(m, x0, z0):
-    """Cabeceira do píer: caixa branca de 4 x 3, mais alta que o píer."""
+    """Cabeceira do píer: caixa branca de 4 x 3, mais alta que o píer, com duas pontes de
+    embarque de cada lado (a passarela sai do canto da laje)."""
     glass(m, x0, x0 + 4, z0, 0)
     run(m, z0 + 1, z0 + 3, x0, 0, "lbg", along="z", catalog=BRICK_ROW)
     run(m, z0 + 1, z0 + 3, x0 + 3, 0, "lbg", along="z", catalog=BRICK_ROW)
     run(m, x0 + 1, x0 + 3, z0 + 2, 0, "lbg", catalog=BRICK_ROW)
     m.add_part("3020", "white", x0, z0, 3)
     m.add_part("3710", "white", x0, z0 + 2, 3)
-    m.add_part("87079", "white", x0, z0, 4)
-    m.add_part("2431", "white", x0, z0 + 2, 4)
+    run(m, x0 + 1, x0 + 3, z0, 4, "white")
+    run(m, x0, x0 + 4, z0 + 1, 4, "white")
+    run(m, x0 + 1, x0 + 3, z0 + 2, 4, "white")
+    for z in (z0, z0 + 2):
+        for x_out, x_tile in ((x0 - 1, x0 - 1), (x0 + 4, x0 + 3)):
+            m.add_part("3062b", "lbg", x_out, z, 0)
+            m.add_part("6141", "lbg", x_out, z, 3)
+            m.add_part("3069b", "lbg", x_tile, z, 4)
 
 
 def stage_terminals(m):
     m.group = STAGES[2]
     # Terminal 2: ex-TPS1 (oeste) e ex-TPS2 (leste), deslocados um stud, como a dobra do prédio
-    t2_module(m, 26, 39, 32, tower=range(35, 38))
-    t2_module(m, 39, 52, 33)
+    t2_module(m, 26, 39, 27, tower=range(35, 38))
+    t2_module(m, 39, 52, 28)
     for i in range(9):                                     # torre de escritórios listrada
-        m.add_part("3021", "black" if i % 3 == 2 else "white", 35, 33, 3 + i)
-    m.add_part("26603", "white", 35, 33, 12)
-    pier(m, 31, 26, 32, west=(27, 30), east=(28, 31))       # píer do TPS1
-    pier_head(m, 30, 23)
-    pier(m, 44, 26, 33, west=(27, 30), east=(28, 31))       # píer do TPS2
-    pier_head(m, 43, 23)
+        m.add_part("3021", "black" if i % 3 == 2 else "white", 35, 28, 6 + i)
+    m.add_part("26603", "white", 35, 28, 15)
+    pier(m, 31, 19, 27, west=(20, 22, 24, 26), east=(21, 23, 25))      # píer do TPS1
+    pier_head(m, 30, 16)
+    pier(m, 44, 19, 28, west=(20, 22, 24, 26), east=(21, 23, 25, 27))  # píer do TPS2
+    pier_head(m, 43, 16)
     for x in (53, 54):                                     # píer remoto de cobertura branca
-        glass(m, 24, 31, x, 0, along="z")
-        run(m, 24, 31, x, 3, "white", along="z")
+        glass(m, 17, 24, x, 0, along="z")
+        run(m, 17, 24, x, 3, "white", along="z")
+    glass(m, 52, 59, 31, 0)                                # corredor de ligação T2-T3
+    run(m, 52, 59, 31, 3, "lbg")
     # Terminal 3: prédio principal com marquise e volume superior recuado, píer comprido ao sul
-    run(m, 58, 72, 37, 0, "lbg", [(x, x + 2, "trans_black", GLASS_ROW) for x in range(59, 70, 3)], catalog=BRICK_ROW)
-    glass(m, 58, 72, 41, 0)
+    run(m, 58, 72, 32, 0, "lbg", [(x, x + 2, "trans_black", GLASS_ROW) for x in range(59, 70, 3)], catalog=BRICK_ROW)
+    glass(m, 58, 72, 36, 0)
     for x in (58, 71):
-        run(m, 38, 41, x, 0, "lbg", along="z", catalog=BRICK_ROW)
-    m.add_part("3456", "white", 58, 37, 3)                 # laje; a última fileira é a marquise
-    run(m, 58, 72, 37, 4, "lbg")
-    run(m, 58, 72, 42, 4, "white")
-    run(m, 58, 72, 38, 4, "lbg", [(x, x + 2, "trans_black", GLASS_ROW) for x in range(60, 70, 4)], catalog=BRICK_ROW)
-    glass(m, 58, 72, 41, 4)
+        run(m, 33, 36, x, 0, "lbg", along="z", catalog=BRICK_ROW)
+    m.add_part("3456", "white", 58, 32, 3)                 # laje; a última fileira é a marquise
+    run(m, 58, 72, 32, 4, "lbg")
+    run(m, 58, 72, 37, 4, "white")
+    run(m, 58, 72, 33, 4, "lbg", [(x, x + 2, "trans_black", GLASS_ROW) for x in range(60, 70, 4)], catalog=BRICK_ROW)
+    glass(m, 58, 72, 36, 4)
     for x in (58, 71):
-        run(m, 39, 41, x, 4, "lbg", along="z", catalog=BRICK_ROW)
-    for z in (38, 40):                                     # cobertura escura com faixas de claraboia
+        run(m, 34, 36, x, 4, "lbg", along="z", catalog=BRICK_ROW)
+    for z in (33, 35):                                     # cobertura escura com faixas de claraboia
         m.add_part("91988", "dbg", 58, z, 7)
         for x, pid, col, rot in ((58, "87079", "dbg", 0), (62, "3069b", "lbg", 90), (63, "69729", "dbg", 0),
-                                 (69, "3069b", "lbg", 90), (70, "3068b", "dbg", 0)):
+                                 (69, "3069b", "lbg", 90)):
             m.add_part(pid, col, x, z, 8, rot)
-    pier(m, 68, 23, 37, west=(24, 27, 30, 33), east=(25, 28, 31, 34))
+        m.add_part("2412b", "lbg", 70, z, 8)               # casa de máquinas
+        m.add_part("2412b", "lbg", 70, z + 1, 8)
+    pier(m, 68, 16, 32, west=(17, 20, 23, 26, 29), east=(18, 21, 24, 27, 30))
     # Terminal 1 (ex-TPS4): caixa baixa de cobertura clara
-    box_walls(m, 18, 30, 24, 34, 0, "glass", "glass")
-    m.add_part("3032", "lbg", 18, 30, 3)
-    m.add_part("69729", "white", 18, 30, 4)
-    m.add_part("3068b", "white", 18, 32, 4)
-    m.add_part("2412b", "lbg", 20, 32, 4)
-    m.add_part("2412b", "lbg", 20, 33, 4)
-    m.add_part("3068b", "white", 22, 32, 4)
+    box_walls(m, 18, 25, 24, 29, 0, "glass", "glass")
+    m.add_part("3032", "lbg", 18, 25, 3)
+    m.add_part("69729", "white", 18, 25, 4)
+    m.add_part("3068b", "white", 18, 27, 4)
+    m.add_part("2412b", "lbg", 20, 27, 4)
+    m.add_part("2412b", "lbg", 20, 28, 4)
+    m.add_part("3068b", "white", 22, 27, 4)
 
 
 # ------------------------------------------------------------------------ 4 torre e lado ar
-def stage_airside(m):
+def stage_airside(m, rng):
     m.group = STAGES[3]
-    tx, tz = 56, 33                                        # torre de controle
+    tx, tz = 56, 26                                        # torre de controle
     m.add_part("3941", "white", tx, tz, 0)
     m.add_part("87580", "white", tx, tz, 3)
     for i in range(3):
@@ -300,59 +326,60 @@ def stage_airside(m):
             m.add_part("3062b", "trans_black", tx + dx, tz + dz, 14)
     m.add_part("4032a", "white", tx, tz, 17)
     m.add_part("4740", "white", tx, tz, 18)
-    m.add_part("3002", "lbg", 54, 35, 0)                   # prédio de apoio na base da torre
-    m.add_part("26603", "lbg", 54, 35, 3)
+    m.add_part("3002", "lbg", 54, 28, 0)                   # prédio de apoio na base da torre
+    m.add_part("26603", "lbg", 54, 28, 3)
     # terminal de cargas (TECA): galpão grande, docas de caminhão ao norte
-    box_walls(m, 2, 29, 16, 37, 0, ("lbg", BRICK_ROW), ("dbg", VENT_ROW))
-    m.add_part("3456", "lbg", 2, 29, 3)
-    m.add_part("91988", "lbg", 2, 35, 3)
-    for z in (29, 31, 33, 35):
+    box_walls(m, 2, 22, 16, 30, 0, ("lbg", BRICK_ROW), ("dbg", VENT_ROW))
+    m.add_part("3456", "lbg", 2, 22, 3)
+    m.add_part("91988", "lbg", 2, 28, 3)
+    for z in (22, 24, 26, 28):
         m.add_part("69729", "lbg", 2, z, 4)
         m.add_part("69729", "lbg", 10, z, 4)
-        if z in (31, 35):                                  # casas de máquinas
+        if z in (24, 28):                                  # casas de máquinas
             m.add_part("2412b", "dbg", 8, z, 4)
             m.add_part("2412b", "dbg", 8, z + 1, 4)
         else:
             m.add_part("3068b", "white", 8, z, 4)
     # bombeiros (SCI): portões vermelhos para o pátio
-    run(m, 76, 82, 34, 0, "red", [(76, 77, "lbg", BRICK_ROW), (78, 79, "lbg", BRICK_ROW), (80, 81, "lbg", BRICK_ROW)],
+    run(m, 73, 79, 27, 0, "red", [(73, 74, "lbg", BRICK_ROW), (75, 76, "lbg", BRICK_ROW), (77, 78, "lbg", BRICK_ROW)],
         catalog={1: "3005"})
-    run(m, 76, 82, 36, 0, "lbg", catalog=BRICK_ROW)
-    m.add_part("3005", "lbg", 76, 35, 0)
-    m.add_part("3005", "lbg", 81, 35, 0)
-    m.add_part("3795", "white", 76, 35, 3)
-    m.add_part("3666", "white", 76, 34, 3)
-    m.add_part("69729", "white", 76, 35, 4)
-    m.add_part("6636", "lbg", 76, 34, 4)
-    # hangares de manutenção com teto em arco
-    for z0 in (25, 31):
-        run(m, z0, z0 + 5, 85, 0, "lbg", along="z", catalog=BRICK_ROW)
-        run(m, z0, z0 + 5, 92, 0, "lbg", along="z", catalog=BRICK_ROW)
-        run(m, 86, 92, z0 + 4, 0, "lbg", catalog=BRICK_ROW)
-        for z in range(z0, z0 + 5):
-            m.add_part("61678", "white", 85, z, 3, 90)
-            m.add_part("61678", "white", 89, z, 3, 270)
-    # Base Aérea de São Paulo (BASP), ao sul das pistas: hangares em abóbada e prédios
-    for x0 in (19, 25, 31):
-        run(m, x0, x0 + 4, 0, 0, "lbg", catalog=BRICK_ROW)
-        run(m, x0, x0 + 4, 3, 0, "lbg", catalog=BRICK_ROW)
-        for x in range(x0, x0 + 4):
-            m.add_part("93273", "lbg", x, 0, 3)
-    for x0, z0, w in ((38, 0, 4), (43, 0, 3), (38, 2, 2)):
-        m.add_part(bk.BRICKS[(2, w)], "white", x0, z0, 0)
-        m.add_part(bk.TILES[(2, w)], "dbg", x0, z0, 3)
-    pave(m, rect(18, 4, 47, 6), "lbg", big=None)
+    run(m, 73, 79, 29, 0, "lbg", catalog=BRICK_ROW)
+    m.add_part("3005", "lbg", 73, 28, 0)
+    m.add_part("3005", "lbg", 78, 28, 0)
+    m.add_part("3795", "white", 73, 28, 3)
+    m.add_part("3666", "white", 73, 27, 3)
+    m.add_part("69729", "white", 73, 28, 4)
+    m.add_part("6636", "lbg", 73, 27, 4)
+    # hangares de manutenção lado a lado, portões para o pátio, e a área de apoio atrás deles
+    for x0 in (80, 88):
+        run(m, 18, 23, x0, 0, "lbg", along="z", catalog=BRICK_ROW)
+        run(m, 18, 23, x0 + 7, 0, "lbg", along="z", catalog=BRICK_ROW)
+        run(m, x0 + 1, x0 + 7, 22, 0, "lbg", catalog=BRICK_ROW)
+        for z in range(18, 23):
+            m.add_part("61678", "white", x0, z, 3, 90)
+            m.add_part("61678", "white", x0 + 4, z, 3, 270)
+    shed(m, 81, 24, 6)
+    shed(m, 89, 24, 6, roof="lbg")
+    for z in (27, 28):                                     # equipamentos de rampa estacionados
+        cars(m, rng, 81, 95, z, colors=GSE_COLORS, rows=GSE_COLORS)
     # parque de combustível: tanques brancos dentro do dique
-    for x in (1, 4, 7):
-        for z in (44, 47):
+    for x in (0, 3, 6):
+        for z in (38, 41):
             m.add_part("3941", "white", x, z, 0)
             m.add_part("14769", "lbg", x, z, 3)
-    run(m, 1, 10, 43, 0, "lbg", catalog=PLATE_ROW)
-    run(m, 1, 10, 49, 0, "lbg", catalog=PLATE_ROW)
+    run(m, 0, 10, 37, 0, "lbg", catalog=PLATE_ROW)
+    run(m, 0, 10, 44, 0, "lbg", catalog=PLATE_ROW)
+    run(m, 38, 44, 9, 0, "lbg", along="z", catalog=PLATE_ROW)
+    # equipamentos de rampa junto às raízes dos píeres
+    taken = m.ground_cells() | ASPHALT
+    for x, z in ((28, 24), (29, 24), (28, 25), (29, 25), (34, 24), (35, 25), (40, 25), (41, 26), (42, 26),
+                 (47, 25), (48, 26), (65, 30), (66, 31), (65, 31), (71, 29), (72, 30), (63, 31)):
+        if (x, z) not in taken:
+            m.add_part("3070b", rng.choice(GSE_COLORS), x, z, 0)
     # torres de iluminação dos pátios
-    taken = m.ground_cells() | TAXILANES
-    for x, z in ((10, 25), (21, 26), (29, 25), (36, 28), (40, 28), (48, 27), (52, 31), (58, 28), (64, 30),
-                 (72, 27), (80, 30), (90, 23)):
+    taken = m.ground_cells() | ASPHALT
+    for x, z in ((8, 18), (21, 19), (28, 21), (35, 22), (40, 22), (48, 21), (52, 25), (57, 21), (64, 23),
+                 (73, 20), (79, 24), (91, 16)):
         if (x, z) not in taken:
             mast(m, x, z)
 
@@ -362,140 +389,65 @@ def stage_landside(m, rng):
     m.group = STAGES[4]
     # viaduto de embarque do T2 sobre a via de desembarque
     for x in (25, 31, 37, 43, 49, 55):
-        m.add_part("3062b", "lbg", x, 37, 0)
-    run(m, 24, 56, 37, 3, "lbg", catalog=PLATE_ROW)
-    run(m, 24, 56, 37, 4, "dbg")
+        m.add_part("3062b", "lbg", x, 32, 0)
+    run(m, 24, 56, 32, 3, "lbg", catalog=PLATE_ROW)
+    run(m, 24, 56, 32, 4, "dbg")
     # passarelas cobertas verdes: espinha ao longo do meio-fio e dois braços pelo estacionamento
     for x in (26, 30, 34, 38, 42, 46, 51):
-        m.add_part("3062b", "lbg", x, 39, 0)
-    run(m, 26, 52, 39, 3, "bright_green", catalog=PLATE_ROW)
-    run(m, 26, 52, 39, 4, "bright_green")
+        m.add_part("3062b", "lbg", x, 34, 0)
+    run(m, 26, 52, 34, 3, "bright_green", catalog=PLATE_ROW)
+    run(m, 26, 52, 34, 4, "bright_green")
     branch = {30, 47}
     for x in branch:
-        for z in (42, 45, 48):
+        for z in (37, 40, 43):
             m.add_part("3062b", "lbg", x, z, 0)
-        run(m, 40, 49, x, 3, "bright_green", along="z", catalog=PLATE_ROW)
-        run(m, 40, 49, x, 4, "bright_green", along="z")
+        run(m, 35, 44, x, 3, "bright_green", along="z", catalog=PLATE_ROW)
+        run(m, 35, 44, x, 4, "bright_green", along="z")
     # faixa de mata entre os dois estacionamentos
     for x in range(23, 56, 2):
         if not {x, x + 1} & branch:
-            tree(m, x, 44, big=True)
-    # estacionamentos lotados: T2, a leste do T3 e do T1
-    for z in (40, 41, 43, 46, 48, 49):
+            tree(m, x, 39, big=True)
+    # estacionamentos lotados: T2, T1, locadora e a leste do T3
+    for z in (35, 36, 38, 41, 43, 44):
         cars(m, rng, 23, 57, z, skip=branch)
-    for z in (39, 40, 42, 43, 45, 46, 48):
-        cars(m, rng, 74, 85, z)
-    for z in (36, 37, 39, 40, 42, 43):
+    for z in (30, 31, 33, 34, 36):
         cars(m, rng, 17, 22, z)
+    for z in (37, 38, 40, 41, 43, 44):
+        cars(m, rng, 11, 22, z)
+    for z in (31, 32, 34, 35, 37, 38, 40, 41, 43, 44):
+        cars(m, rng, 74, 86, z)
     # edifício-garagem do T3: térreo ventilado, laje de estacionamento com carros e mureta
-    box_walls(m, 58, 44, 72, 50, 0, ("lbg", VENT_ROW), ("lbg", VENT_ROW))
-    m.add_part("3456", "dbg", 58, 44, 3)
+    box_walls(m, 58, 39, 72, 45, 0, ("lbg", VENT_ROW), ("lbg", VENT_ROW))
+    m.add_part("3456", "dbg", 58, 39, 3)
+    run(m, 58, 72, 39, 4, "lbg", catalog=PLATE_ROW)
     run(m, 58, 72, 44, 4, "lbg", catalog=PLATE_ROW)
-    run(m, 58, 72, 49, 4, "lbg", catalog=PLATE_ROW)
-    for z in (45, 47, 48):
+    for z in (40, 42, 43):
         cars(m, rng, 58, 72, z, level=4)
     for x in range(3, 16, 3):                              # carretas nas docas do TECA
-        m.add_part("3069b", "white", x, 37, 0, 90)
-    # galpões de apoio (comissária, manutenção) e terraplenagem a leste
-    m.add_part("2456", "lbg", 87, 38, 0)
-    m.add_part("69729", "white", 87, 38, 3)
-    m.add_part("2456", "lbg", 89, 41, 0)
-    m.add_part("69729", "white", 89, 41, 3)
-    run(m, 86, 96, 48, 0, "dark_orange", catalog=PLATE_ROW)
-    run(m, 87, 96, 47, 0, "dark_orange", catalog=PLATE_ROW)
+        m.add_part("3069b", "white", x, 30, 0, 90)
+    # prédios de apoio a leste: comissária, oficina e pátio de equipamentos
+    shed(m, 87, 32, 6)
+    shed(m, 87, 34, 6, wall="white", roof="lbg")
+    shed(m, 89, 37, 6, roof="lbg")
+    for z in (41, 43):
+        cars(m, rng, 87, 95, z, colors=GSE_COLORS, rows=GSE_COLORS)
     # calçadas, vias de meio-fio, acessos, marginal e Rodovia Hélio Smidt
-    walks = rect(26, 36, 39, 37) | rect(26, 39, 52, 40) | rect(30, 40, 31, 50) | rect(47, 40, 48, 50) | rect(58, 42, 72, 43)
+    walks = (rect(26, 31, 39, 32) | rect(23, 34, 57, 35) | rect(30, 35, 31, 45) | rect(47, 35, 48, 45)
+             | rect(58, 37, 72, 38) | rect(0, 37, 10, 45) | rect(86, 31, 96, 45))
     pave(m, walks, "lbg", big=None)
-    roads = (rect(22, 37, 58, 39) | rect(17, 34, 26, 35) | rect(22, 35, 23, 50) | rect(57, 39, 58, 50)
-             | rect(57, 43, 73, 44) | rect(73, 36, 74, 50) | rect(0, 50, 96, 53) | rect(1, 37, 17, 43)
-             | rect(23, 42, 57, 43) | rect(23, 47, 57, 48) | rect(74, 41, 85, 42) | rect(74, 44, 85, 45)
-             | rect(74, 47, 85, 48) | rect(74, 49, 85, 50) | rect(17, 38, 22, 39) | rect(17, 41, 22, 42))
+    roads = (rect(16, 29, 26, 30) | rect(22, 30, 26, 34) | rect(22, 32, 58, 34) | rect(22, 34, 23, 45)
+             | rect(57, 34, 58, 45) | rect(57, 38, 74, 39) | rect(72, 30, 74, 45) | rect(72, 30, 96, 31)
+             | rect(0, 45, 96, 48) | rect(0, 30, 17, 37) | rect(23, 37, 57, 38) | rect(23, 42, 57, 43)
+             | rect(17, 32, 22, 33) | rect(17, 35, 22, 36) | rect(10, 37, 11, 45) | rect(11, 39, 22, 40)
+             | rect(11, 42, 22, 43) | rect(74, 33, 86, 34) | rect(74, 36, 86, 37) | rect(74, 39, 86, 40)
+             | rect(74, 42, 86, 43))
     pave(m, roads, "dbg", big=None)
-    # árvores soltas no lado terra
-    for x, z, big in ((19, 45, True), (20, 47, False), (17, 48, True), (24, 35, False), (11, 44, True), (13, 46, False),
-                      (14, 44, False), (88, 45, True), (91, 45, False), (86, 37, False), (94, 44, True), (75, 37, False),
-                      (83, 37, True), (78, 38, False), (93, 39, False), (16, 46, False)):
-        need = rect(x, z, x + 2, z + 2) if big else {(x, z)}
-        if not need & m.ground_cells():
-            tree(m, x, z, big=big)
-
-
-# ------------------------------------------------------------------------ 6 cidade
-ROOFS = ["dark_orange"] * 7 + ["reddish_brown"] * 4 + ["lbg"] * 4 + ["tan"] * 2 + ["dark_tan"] * 2 + ["white", "dbg"]
-
-
-def city_block(m, rng, x0, z0, w, d):
-    """Quarteirão visto do alto: mosaico miúdo de lotes (placas na cor do telhado: cerâmica,
-    fibrocimento, laje), casas de duas águas, sobrados com caixa-d'água, algum prédio e
-    árvores; às vezes um galpão industrial."""
-    cells = rect(x0, z0, x0 + w, z0 + d)
-    if rng.random() < 0.1 and w >= 4 and d >= 4:
-        m.fill_layers(None, (0, 1), "lbg", cells=cells)
-        m.add_part("2456" if w >= 6 else "3001", "lbg", x0, z0 + 1, 1)
-        m.add_part("69729" if w >= 6 else "87079", "white", x0, z0 + 1, 4)
-        return
-    if rng.random() < 0.3:                                 # prédio de apartamentos
-        x, z = rng.randrange(x0, x0 + w - 1), rng.randrange(z0, z0 + d - 1)
-        col = rng.choice(["white", "tan", "lbg"])
-        m.add_part("3003", col, x, z, 0)
-        m.add_part("3003", col, x, z, 3)
-        m.add_part("3068b", "lbg", x, z, 6)
-        cells -= rect(x, z, x + 2, z + 2)
-    while cells:
-        x, z = min(cells, key=lambda c: (c[1], c[0]))
-        square = {(x + 1, z), (x, z + 1), (x + 1, z + 1)} <= cells
-        pair = (x + 1, z) in cells
-        r = rng.random()
-        if square and r < 0.12:                            # casa de duas águas
-            col = rng.choice(["dark_orange", "dark_orange", "reddish_brown"])
-            m.add_part("85984", col, x, z, 0, 180)
-            m.add_part("85984", col, x, z + 1, 0, 0)
-            cells -= rect(x, z, x + 2, z + 2)
-        elif square and r < 0.45:
-            m.add_part("3022", rng.choice(ROOFS), x, z, 0)
-            cells -= rect(x, z, x + 2, z + 2)
-        elif pair and r < 0.75:
-            m.add_part("3023", rng.choice(ROOFS), x, z, 0)
-            cells -= {(x, z), (x + 1, z)}
-        elif pair and r < 0.82:                            # sobrado, às vezes com caixa-d'água
-            m.add_part("3004", rng.choice(["white", "tan", "lbg"]), x, z, 0)
-            if rng.random() < 0.4:
-                m.add_part("3794b", "lbg", x, z, 3)
-                m.add_part("98138", "blue", x + 0.5, z, 4)
-            cells -= {(x, z), (x + 1, z)}
-        elif r < 0.9:
-            tree(m, x, z)
-            cells.discard((x, z))
-        else:
-            m.add_part("3024", rng.choice(ROOFS), x, z, 0)
-            cells.discard((x, z))
-
-
-def stage_city(m, rng):
-    m.group = STAGES[5]
-    streets_x = list(range(6, WIDTH, 7))
-    for x in streets_x:                                    # ruas norte-sul
-        run(m, 54, DEPTH, x, 0, "dbg", along="z")
-    for z in (54, 59):                                     # ruas leste-oeste
-        run(m, 0, WIDTH, z, 0, "dbg", skip=set(streets_x))
-    edges = [0] + [x + 1 for x in streets_x]
-    for i, x0 in enumerate(edges):
-        x1 = streets_x[i] if i < len(streets_x) else WIDTH
-        for z0, z1 in ((55, 59), (60, DEPTH)):
-            city_block(m, rng, x0, z0, x1 - x0, z1 - z0)
-    for x in range(1, WIDTH - 1, 3):                       # arborização ao longo da rodovia
-        tree(m, x, 53, big=x % 2 == 0)
-    # bairros ao sul (Cumbica) e na cabeceira oeste
-    for x0, z0, w, d in ((50, 0, 6, 4), (57, 0, 6, 4), (64, 0, 6, 4), (71, 0, 6, 4), (78, 0, 6, 4), (85, 0, 6, 4),
-                         (0, 0, 5, 4), (6, 0, 5, 4), (12, 0, 5, 3)):
-        city_block(m, rng, x0, z0, w, d)
-    run(m, 48, WIDTH, 4, 0, "dbg")
 
 
 # ------------------------------------------------------------------------ 2 pátios
 def stage_aprons(m):
     m.group = STAGES[1]
-    pave(m, TAXILANES, "dbg", big=None)                    # pistas de táxi do pátio, em asfalto
+    pave(m, ASPHALT, "dbg", big=None)                      # pistas de táxi e via de serviço, em asfalto
     pave(m, APRON, "lbg")                                  # pátios em placas de concreto
 
 
@@ -506,9 +458,8 @@ def build(upto=len(STAGES), render=True, size=1400):
     m = bk.Model("Aeroporto Internacional de Guarulhos (GRU) - microescala")
     stage_base(m)                                          # os prédios entram antes do pavimento,
     stage_terminals(m)                                     # que só ocupa o que sobrou livre
-    stage_airside(m)
+    stage_airside(m, rng)
     stage_landside(m, rng)
-    stage_city(m, rng)
     stage_aprons(m)
     m.sort_groups(STAGES)
     m.parts = [p for p in m.parts if STAGES.index(p.group) < upto]

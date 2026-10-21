@@ -1,136 +1,103 @@
 peca;nome;cor;codigo_cor_ldraw;quantidade
 14769;Tile 2 x 2 Round with Round Underside Stud;Light_Bluish_Grey;71;6
-1751;Tile 4 x 4;Light_Bluish_Grey;71;3
-2412b;Tile 1 x 2 Grille with Groove;Dark_Bluish_Grey;72;48
-2412b;Tile 1 x 2 Grille with Groove;Light_Bluish_Grey;71;56
-2412b;Tile 1 x 2 Grille with Groove;White;15;42
-2431;Tile 1 x 4 with Groove;Dark_Bluish_Grey;72;15
-2431;Tile 1 x 4 with Groove;Light_Bluish_Grey;71;16
-2431;Tile 1 x 4 with Groove;White;15;2
-2456;Brick 2 x 6;Light_Bluish_Grey;71;5
-26603;Tile 2 x 3;Dark_Bluish_Grey;72;4
-26603;Tile 2 x 3;Light_Bluish_Grey;71;2
+1751;Tile 4 x 4;Light_Bluish_Grey;71;9
+2412b;Tile 1 x 2 Grille with Groove;Dark_Bluish_Grey;72;54
+2412b;Tile 1 x 2 Grille with Groove;Light_Bluish_Grey;71;77
+2412b;Tile 1 x 2 Grille with Groove;White;15;60
+2431;Tile 1 x 4 with Groove;Dark_Bluish_Grey;72;18
+2431;Tile 1 x 4 with Groove;Light_Bluish_Grey;71;26
+2431;Tile 1 x 4 with Groove;White;15;4
+2456;Brick 2 x 6;Light_Bluish_Grey;71;4
+2456;Brick 2 x 6;White;15;1
+26603;Tile 2 x 3;Dark_Bluish_Grey;72;2
+26603;Tile 2 x 3;Light_Bluish_Grey;71;7
 26603;Tile 2 x 3;White;15;1
 2877;Brick 1 x 2 with Grille;Dark_Bluish_Grey;72;7
 2877;Brick 1 x 2 with Grille;Light_Bluish_Grey;71;14
-3001;Brick 2 x 4;Light_Bluish_Grey;71;1
-3001;Brick 2 x 4;White;15;1
 3002;Brick 2 x 3;Light_Bluish_Grey;71;1
-3002;Brick 2 x 3;White;15;1
-3003;Brick 2 x 2;Light_Bluish_Grey;71;4
-3003;Brick 2 x 2;Tan;19;8
-3003;Brick 2 x 2;White;15;1
-3004;Brick 1 x 2;Light_Bluish_Grey;71;30
-3004;Brick 1 x 2;Tan;19;9
-3004;Brick 1 x 2;White;15;3
-3005;Brick 1 x 1;Light_Bluish_Grey;71;51
+3004;Brick 1 x 2;Light_Bluish_Grey;71;22
+3005;Brick 1 x 1;Light_Bluish_Grey;71;59
 3005;Brick 1 x 1;Red;4;3
-3005;Brick 1 x 1;Trans_Black;40;6
+3005;Brick 1 x 1;Trans_Black;40;9
 3009;Brick 1 x 6;Light_Bluish_Grey;71;5
-3010;Brick 1 x 4;Light_Bluish_Grey;71;12
+3010;Brick 1 x 4;Light_Bluish_Grey;71;6
 3020;Plate 2 x 4;White;15;2
 3021;Plate 2 x 3;Black;0;3
 3021;Plate 2 x 3;White;15;6
-3022;Plate 2 x 2;Dark_Bluish_Grey;72;2
-3022;Plate 2 x 2;Dark_Orange;484;19
-3022;Plate 2 x 2;Dark_Tan;28;9
-3022;Plate 2 x 2;Light_Bluish_Grey;71;9
-3022;Plate 2 x 2;Reddish_Brown;70;10
-3022;Plate 2 x 2;Tan;19;5
-3022;Plate 2 x 2;White;15;5
 3023;Plate 1 x 2;Bright_Green;10;1
-3023;Plate 1 x 2;Dark_Bluish_Grey;72;4
-3023;Plate 1 x 2;Dark_Orange;484;43
-3023;Plate 1 x 2;Dark_Tan;28;9
-3023;Plate 1 x 2;Light_Bluish_Grey;71;37
-3023;Plate 1 x 2;Reddish_Brown;70;23
-3023;Plate 1 x 2;Tan;19;12
-3023;Plate 1 x 2;White;15;8
+3023;Plate 1 x 2;Light_Bluish_Grey;71;2
 3024;Plate 1 x 1;Bright_Green;10;2
-3024;Plate 1 x 1;Dark_Bluish_Grey;72;1
-3024;Plate 1 x 1;Dark_Orange;484;16
-3024;Plate 1 x 1;Dark_Tan;28;3
-3024;Plate 1 x 1;Light_Bluish_Grey;71;7
-3024;Plate 1 x 1;Reddish_Brown;70;5
-3024;Plate 1 x 1;Tan;19;5
-3024;Plate 1 x 1;White;15;1
-3031;Plate 4 x 4;Light_Bluish_Grey;71;1
-3032;Plate 4 x 6;Light_Bluish_Grey;71;4
-3062b;Brick 1 x 1 Round with Hollow Stud;Light_Bluish_Grey;71;35
+3024;Plate 1 x 1;Dark_Orange;484;4
+3032;Plate 4 x 6;Light_Bluish_Grey;71;1
+3062b;Brick 1 x 1 Round with Hollow Stud;Light_Bluish_Grey;71;52
 3062b;Brick 1 x 1 Round with Hollow Stud;Trans_Black;40;4
-3062b;Brick 1 x 1 Round with Hollow Stud;White;15;3
-3065;Brick 1 x 2 without Centre Stud;Trans_Black;40;15
-3066;Brick 1 x 4 without Centre Studs;Trans_Black;40;10
-3067b;Brick 1 x 6 without Centre Studs with Internal Ribs;Trans_Black;40;10
-3068b;Tile 2 x 2 with Groove;Dark_Bluish_Grey;72;6
-3068b;Tile 2 x 2 with Groove;Light_Bluish_Grey;71;9
+3062b;Brick 1 x 1 Round with Hollow Stud;White;15;7
+3065;Brick 1 x 2 without Centre Stud;Trans_Black;40;17
+3066;Brick 1 x 4 without Centre Studs;Trans_Black;40;9
+3067b;Brick 1 x 6 without Centre Studs with Internal Ribs;Trans_Black;40;16
+3068b;Tile 2 x 2 with Groove;Dark_Bluish_Grey;72;1
+3068b;Tile 2 x 2 with Groove;Light_Bluish_Grey;71;5
 3068b;Tile 2 x 2 with Groove;White;15;4
 3069b;Tile 1 x 2 with Groove;Bright_Green;10;1
-3069b;Tile 1 x 2 with Groove;Dark_Bluish_Grey;72;34
-3069b;Tile 1 x 2 with Groove;Light_Bluish_Grey;71;52
-3069b;Tile 1 x 2 with Groove;White;15;13
-3070b;Tile 1 x 1 with Groove;Black;0;12
+3069b;Tile 1 x 2 with Groove;Dark_Bluish_Grey;72;19
+3069b;Tile 1 x 2 with Groove;Light_Bluish_Grey;71;83
+3069b;Tile 1 x 2 with Groove;White;15;17
+3070b;Tile 1 x 1 with Groove;Black;0;14
 3070b;Tile 1 x 1 with Groove;Bright_Green;10;2
-3070b;Tile 1 x 1 with Groove;Dark_Blue;272;4
-3070b;Tile 1 x 1 with Groove;Dark_Bluish_Grey;72;30
-3070b;Tile 1 x 1 with Groove;Dark_Red;320;5
-3070b;Tile 1 x 1 with Groove;Light_Bluish_Grey;71;67
+3070b;Tile 1 x 1 with Groove;Dark_Blue;272;7
+3070b;Tile 1 x 1 with Groove;Dark_Bluish_Grey;72;41
+3070b;Tile 1 x 1 with Groove;Dark_Red;320;6
+3070b;Tile 1 x 1 with Groove;Light_Bluish_Grey;71;113
 3070b;Tile 1 x 1 with Groove;Red;4;3
-3070b;Tile 1 x 1 with Groove;White;15;47
+3070b;Tile 1 x 1 with Groove;White;15;92
 3456;Plate 6 x 14;Dark_Bluish_Grey;72;1
 3456;Plate 6 x 14;Light_Bluish_Grey;71;1
 3456;Plate 6 x 14;White;15;1
 3460;Plate 1 x 8;Bright_Green;10;2
-3460;Plate 1 x 8;Dark_Orange;484;4
-3460;Plate 1 x 8;Light_Bluish_Grey;71;3
+3460;Plate 1 x 8;Dark_Orange;484;3
+3460;Plate 1 x 8;Light_Bluish_Grey;71;1
 3622;Brick 1 x 3;Light_Bluish_Grey;71;2
-3666;Plate 1 x 6;Dark_Orange;484;2
+3666;Plate 1 x 6;Dark_Orange;484;3
+3666;Plate 1 x 6;Light_Bluish_Grey;71;1
 3666;Plate 1 x 6;White;15;1
-3710;Plate 1 x 4;Dark_Orange;484;2
-3710;Plate 1 x 4;Light_Bluish_Grey;71;1
+3710;Plate 1 x 4;Dark_Orange;484;3
 3710;Plate 1 x 4;White;15;2
-3794b;Plate 1 x 2 with Groove with 1 Centre Stud;Light_Bluish_Grey;71;7
 3795;Plate 2 x 6;White;15;1
-3811;Baseplate 32 x 32;Green;2;6
 3941;Brick 2 x 2 Round without Reinforcement;White;15;7
-4032a;Plate 2 x 2 Round with Axlehole;Dark_Green;288;32
+4032a;Plate 2 x 2 Round with Axlehole;Dark_Green;288;10
 4032a;Plate 2 x 2 Round with Axlehole;Green;2;5
 4032a;Plate 2 x 2 Round with Axlehole;White;15;2
 4162;Tile 1 x 8;Bright_Green;10;5
-4162;Tile 1 x 8;Dark_Bluish_Grey;72;82
-4162;Tile 1 x 8;Light_Bluish_Grey;71;44
-4162;Tile 1 x 8;White;15;1
-4477;Plate 1 x 10;Dark_Orange;484;3
+4162;Tile 1 x 8;Dark_Bluish_Grey;72;84
+4162;Tile 1 x 8;Light_Bluish_Grey;71;41
+4162;Tile 1 x 8;White;15;3
+4186;Baseplate 48 x 48;Green;2;2
+4477;Plate 1 x 10;Dark_Orange;484;2
+4477;Plate 1 x 10;Light_Bluish_Grey;71;2
 4740;Dish 2 x 2 Inverted;White;15;1
-54200;Slope Brick 31 1 x 1 x 0.667;Dark_Bluish_Grey;72;20
 60479;Plate 1 x 12;Bright_Green;10;2
 60479;Plate 1 x 12;Dark_Orange;484;1
 60479;Plate 1 x 12;Light_Bluish_Grey;71;4
-6112;Brick 1 x 12;Light_Bluish_Grey;71;5
-6141;Plate 1 x 1 Round;Dark_Green;288;82
-6141;Plate 1 x 1 Round;Green;2;19
-6141;Plate 1 x 1 Round;Reddish_Brown;70;37
+6112;Brick 1 x 12;Light_Bluish_Grey;71;7
+6141;Plate 1 x 1 Round;Light_Bluish_Grey;71;8
+6141;Plate 1 x 1 Round;Red;4;4
+6141;Plate 1 x 1 Round;Reddish_Brown;70;15
 61678;Slope Brick Curved 4 x 1;White;15;20
-63864;Tile 1 x 3;Dark_Bluish_Grey;72;19
-63864;Tile 1 x 3;Light_Bluish_Grey;71;18
+63864;Tile 1 x 3;Dark_Bluish_Grey;72;18
+63864;Tile 1 x 3;Light_Bluish_Grey;71;13
 63864;Tile 1 x 3;White;15;8
-6636;Tile 1 x 6;Dark_Bluish_Grey;72;32
-6636;Tile 1 x 6;Light_Bluish_Grey;71;12
+6636;Tile 1 x 6;Dark_Bluish_Grey;72;10
+6636;Tile 1 x 6;Light_Bluish_Grey;71;23
 6636;Tile 1 x 6;White;15;3
-69729;Tile 2 x 6;Dark_Bluish_Grey;72;26
-69729;Tile 2 x 6;Light_Bluish_Grey;71;29
-69729;Tile 2 x 6;White;15;7
+69729;Tile 2 x 6;Dark_Bluish_Grey;72;29
+69729;Tile 2 x 6;Light_Bluish_Grey;71;27
+69729;Tile 2 x 6;White;15;4
 85861;Plate 1 x 1 Round with Open Stud;Light_Bluish_Grey;71;12
 85984;Slope Brick 31 1 x 2 x 0.667;Dark_Bluish_Grey;72;18
-85984;Slope Brick 31 1 x 2 x 0.667;Dark_Orange;484;32
-85984;Slope Brick 31 1 x 2 x 0.667;Reddish_Brown;70;16
 87079;Tile 2 x 4 with Groove;Dark_Bluish_Grey;72;15
-87079;Tile 2 x 4 with Groove;Light_Bluish_Grey;71;10
-87079;Tile 2 x 4 with Groove;White;15;3
+87079;Tile 2 x 4 with Groove;Light_Bluish_Grey;71;12
 87580;Plate 2 x 2 with Groove with 1 Centre Stud;White;15;1
 87994;Bar 3L;Light_Bluish_Grey;71;12
 91988;Plate 2 x 14;Dark_Bluish_Grey;72;2
 91988;Plate 2 x 14;Light_Bluish_Grey;71;1
-93273;Slope Brick Curved 4 x 1 Double;Light_Bluish_Grey;71;12
-98138;Tile 1 x 1 Round with Groove;Blue;1;7
 98138;Tile 1 x 1 Round with Groove;White;15;16
