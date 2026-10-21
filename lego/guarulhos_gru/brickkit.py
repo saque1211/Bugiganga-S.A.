@@ -26,7 +26,8 @@ BRICKS = {(1, 1): "3005", (1, 2): "3004", (1, 3): "3622", (1, 4): "3010", (1, 6)
           (1, 10): "6111", (1, 12): "6112", (2, 2): "3003", (2, 3): "3002", (2, 4): "3001", (2, 6): "2456",
           (2, 8): "3007"}
 TILES = {(1, 1): "3070b", (1, 2): "3069b", (1, 3): "63864", (1, 4): "2431", (1, 6): "6636", (1, 8): "4162",
-         (2, 2): "3068b", (2, 3): "26603", (2, 4): "87079", (2, 6): "69729"}
+         (2, 2): "3068b", (2, 3): "26603", (2, 4): "87079", (2, 6): "69729", (3, 6): "6934", (4, 4): "1751",
+         (6, 6): "10202", (8, 16): "90498"}
 GLASS = {(1, 2): "3065", (1, 4): "3066", (1, 6): "3067b"}
 KINDS = {"plate": (PLATES, 1), "brick": (BRICKS, 3), "tile": (TILES, 1), "glass": (GLASS, 3)}
 
@@ -35,8 +36,9 @@ COLORS = {"black": 0, "blue": 1, "green": 2, "red": 4, "bright_green": 10, "yell
           "tan": 19, "orange": 25, "lime": 27, "dark_tan": 28, "reddish_brown": 70, "lbg": 71, "dbg": 72,
           "medium_blue": 73, "bright_light_orange": 191, "dark_blue": 272, "dark_green": 288,
           "dark_red": 320, "dark_azure": 321, "medium_azure": 322, "coral": 353, "sand_green": 378,
+          "dark_orange": 484, "olive_green": 330, "medium_nougat": 84,
           "trans_red": 36, "trans_black": 40, "trans_light_blue": 43, "trans_yellow": 46, "trans_clear": 47}
-COMMON = {0, 1, 2, 4, 10, 14, 15, 19, 25, 28, 70, 71, 72, 191, 272, 288, 320, 321, 36, 40, 43, 47}
+COMMON = {0, 1, 2, 4, 10, 14, 15, 19, 25, 28, 70, 71, 72, 191, 272, 288, 320, 321, 484, 36, 40, 43, 47}
 
 ISO = math.degrees(math.atan(1 / math.sqrt(2)))  # true isometric elevation, 35.26 degrees
 VIEWS = {  # (azimuth, elevation) in degrees; azimuth 0 = camera in front (-Z), 90 = on the right (+X)
@@ -190,6 +192,14 @@ class Model:
         self.parts.append(p)
         return p
 
+    def add_held(self, pid, color, parent, origin, rot=0, group=None):
+        """A part held by another one in a way the stud grid does not describe (a bar in an
+        open stud): LDraw origin given in LDU, joined to its parent in check()."""
+        p = Part(pid, COLORS.get(color, color), parent.x, parent.z, parent.level, rot, group or self.group)
+        p.pos, p.parent = np.array(origin, float), parent
+        self.parts.append(p)
+        return p
+
     def place_local(self, specs, at, heading=0, level=0, group=None):
         """Place parts given in a local frame (+z = forward) turned by `heading` degrees.
 
@@ -222,18 +232,24 @@ class Model:
                 p.pos, p.R, p.x, p.z, p.rot = p.parent.pos.copy(), p.parent.R, p.parent.x, p.parent.z, p.parent.rot
 
     def fill_layers(self, region, levels, color, kind="plate", exclude=(), group=None, sizes=None,
-                    seams=None, below=(), max_len=None):
+                    seams=None, below=(), max_len=None, cells=None):
         """Fill rectangle region=(x0, z0, x1, z1) from level l0 up to l1 with as few parts as possible.
 
         Greedy largest-first packing. Each layer avoids putting a joint right on top of a
         joint of the layer below (running bond). For the first layer, the joints to bridge
         come from `seams` = {"x": [...], "z": [...]} and/or the parts in `below`.
+        With `cells` (a set of (x, z)), that set is filled instead of the rectangle.
         """
         catalog, step = KINDS[kind]
         color = COLORS.get(color, color)
-        x0, z0, x1, z1 = region
         l0, l1 = levels
-        region_cells = {(x, z) for x in range(x0, x1) for z in range(z0, z1)}
+        if cells is not None:
+            region_cells = set(cells)
+            xs, zs = [c[0] for c in region_cells], [c[1] for c in region_cells]
+            x0, z0, x1, z1 = (min(xs), min(zs), max(xs) + 1, max(zs) + 1) if region_cells else (0, 0, 0, 0)
+        else:
+            x0, z0, x1, z1 = region
+            region_cells = {(x, z) for x in range(x0, x1) for z in range(z0, z1)}
         for ex in exclude:
             region_cells -= {(x, z) for x in range(ex[0], ex[2]) for z in range(ex[1], ex[3])}
         opts = []
@@ -270,6 +286,20 @@ class Model:
                 joints |= edges
             joints_below = joints
         return placed
+
+    def ground_cells(self):
+        """Grid cells taken by parts standing on the baseplates (level 0)."""
+        out = set()
+        for p in self.parts:
+            if p.parent is None and 0 <= p.level < 0.5:
+                out |= {(x, z) for x in range(math.floor(p.x), math.ceil(p.x + p.w))
+                        for z in range(math.floor(p.z), math.ceil(p.z + p.d))}
+        return out
+
+    def sort_groups(self, order):
+        """Reorder parts so the groups follow `order` (stable inside each group)."""
+        rank = {g: i for i, g in enumerate(order)}
+        self.parts.sort(key=lambda p: rank.get(p.group, len(order)))
 
     # ----------------------------------------------------------------- reports
     def describe(self, title=None):
@@ -390,8 +420,8 @@ class Model:
         return path
 
     # ----------------------------------------------------------------- render
-    def render(self, path, view="iso_front_left", size=1600, ss=2, caption=None):
-        return render(self.parts, path, view, size, ss, caption)
+    def render(self, path, view="iso_front_left", size=1600, ss=2, caption=None, **kw):
+        return render(self.parts, path, view, size, ss, caption, **kw)
 
 
 def _edges(x, z, w, d, region):
@@ -416,6 +446,15 @@ def _fmt(v):
 
 
 # ====================================================================== renderer
+# Display colours closer to real bricks (BrickLink/Studio-like) than LDConfig; the model keeps
+# the standard LDraw codes, this only changes how the preview looks.
+DISPLAY = {0: "232527", 1: "0A50A0", 2: "3C7A47", 4: "B3261E", 10: "58A34A", 14: "E9C23A", 15: "EEEFEB",
+           19: "D9C59C", 25: "E8822A", 28: "958A72", 36: "C91A09", 40: "3A3F45", 43: "B8E3EA", 47: "F4F6F7",
+           70: "5C3522", 71: "A3A8AB", 72: "6B6E6B", 84: "AA7E58", 86: "7B5F45", 272: "143B66", 288: "21482F",
+           320: "6E1A1A", 321: "2A86B8", 330: "8D8C60", 335: "B8817A", 378: "92AD9D", 379: "6F8199",
+           484: "9E5B27", 151: "C9CACB"}
+
+
 def _world_geometry(parts):
     pal = ldraw.colours()
 
@@ -426,9 +465,11 @@ def _world_geometry(parts):
             edge = code >= ldraw.EDGE_OF
             base = int(code - ldraw.EDGE_OF if edge else code)
             _, rgb, _, a = pal.get(base, ("?", (255, 0, 255), (0, 0, 0), 255))
+            if base in DISPLAY:
+                rgb = tuple(int(DISPLAY[base][i:i + 2], 16) for i in (0, 2, 4))
             col = np.array(rgb, float)
             if edge:
-                col = col * 0.45 if base != 0 else np.array([95.0, 95, 95])
+                col = col * 0.62 if base != 0 else np.array([80.0, 82, 84])
             out[m] = col / 255.0
             alpha[m] = a / 255.0
         return out, alpha
@@ -521,8 +562,22 @@ def _raster(P, D, W, H, zbuf, ids_buf, ids):
         commit((ys * W + xs)[inside], depth[inside], np.full(int(inside.sum()), ids[i]))
 
 
-def render(parts, path, view="iso_front_left", size=1600, ss=2, caption=None):
-    """Orthographic render with flat shading and LDraw edge lines, saved as PNG."""
+def _sun(az, el):
+    """Unit vector pointing to the sun (same azimuth/elevation convention as the views)."""
+    a, e = math.radians(az), math.radians(el)
+    return np.array([math.sin(a) * math.cos(e), -math.sin(e), -math.cos(a) * math.cos(e)])
+
+
+def _shift(a, dx, dy, fill):
+    out = np.full_like(a, fill)
+    h, w = a.shape
+    out[max(dy, 0):h + min(dy, 0), max(dx, 0):w + min(dx, 0)] = a[max(-dy, 0):h + min(-dy, 0), max(-dx, 0):w + min(-dx, 0)]
+    return out
+
+
+def render(parts, path, view="iso_front_left", size=1600, ss=2, caption=None, sun=(-115, 40), shadows=True, ao=True):
+    """Orthographic render: sun with cast shadows, sky ambient, ambient occlusion and soft
+    LDraw edge lines, saved as PNG."""
     tris, tcol, talpha, lines, lcol, lalpha = _world_geometry(parts)
     f, r, u = _basis(view)
     V = tris.reshape(-1, 3)
@@ -544,10 +599,9 @@ def render(parts, path, view="iso_front_left", size=1600, ss=2, caption=None):
     ok = ln > 1e-9
     n[ok] /= ln[ok, None]
     n[(n @ f) > 0] *= -1  # two-sided: always shade the side facing the camera
-    key = np.array([-0.45, -1.0, -0.65]); key /= np.linalg.norm(key)
-    fill = np.array([0.8, -0.3, 0.4]); fill /= np.linalg.norm(fill)
-    shade = 0.42 + 0.58 * np.clip(n @ key, 0, 1) + 0.12 * np.clip(n @ fill, 0, 1)
-    shaded = np.clip(tcol * shade[:, None], 0, 1)
+    to_sun = _sun(*sun)
+    diffuse = np.clip(n @ to_sun, 0, 1)
+    ambient = 0.44 + 0.16 * np.clip(-n[:, 1], 0, 1) + 0.05 * np.clip(-(n @ f), 0, 1)  # sky from above
 
     zbuf, ids = np.full((H, W), np.inf), np.full((H, W), -1, np.int64)
     oi = np.nonzero(ok & (talpha >= 0.99))[0]
@@ -555,13 +609,52 @@ def render(parts, path, view="iso_front_left", size=1600, ss=2, caption=None):
     zt, idt = zbuf.copy(), np.full((H, W), -1, np.int64)
     ti = np.nonzero(ok & (talpha < 0.99))[0]
     _raster(P[ti], D[ti], W, H, zt, idt, ti)
+    hit = ids >= 0
+    hy, hx = np.nonzero(hit)
+    tri = ids[hit]
+
+    lit = np.zeros(len(tri))
+    if shadows:  # shadow map seen from the sun, compared with each visible pixel
+        fL = -to_sun
+        rL = np.cross(fL, np.array([0.0, 0.0, 1.0]))
+        rL /= np.linalg.norm(rL)
+        uL = np.cross(rL, fL)
+        lx, ly, ld = V @ rL, V @ uL, V @ fL
+        texel = max(0.5 / scale, max(lx.max() - lx.min(), ly.max() - ly.min()) / 6000)
+        SW, SH = int((lx.max() - lx.min()) / texel) + 3, int((ly.max() - ly.min()) / texel) + 3
+        LP = np.stack([(lx - lx.min()) / texel + 1, (ly.max() - ly) / texel + 1], 1).reshape(-1, 3, 2)
+        smap, sid = np.full((SH, SW), np.inf), np.full((SH, SW), -1, np.int64)
+        _raster(LP[oi], ld.reshape(-1, 3)[oi], SW, SH, smap, sid, oi)
+        world = (((hx + 0.5 - ox) / scale)[:, None] * r + ((oy - hy - 0.5) / scale)[:, None] * u
+                 + zbuf[hit][:, None] * f)
+        px = (world @ rL - lx.min()) / texel + 1
+        py = (ly.max() - world @ uL) / texel + 1
+        dd = world @ fL
+        shade = np.zeros(len(tri))
+        for ddx, ddy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):  # soft edge (PCF)
+            ix = np.clip(np.floor(px).astype(np.int64) + ddx, 0, SW - 1)
+            iy = np.clip(np.floor(py).astype(np.int64) + ddy, 0, SH - 1)
+            shade += dd > smap[iy, ix] + 2.5
+        lit = shade / 5
+    light = ambient[tri] + 0.55 * diffuse[tri] * (1 - 0.85 * lit)
+    col = np.clip(tcol[tri] * light[:, None], 0, 1)
+    if ao:  # screen-space ambient occlusion: darken pixels that nearby closer surfaces overhang
+        occ = np.zeros((H, W))
+        zb = np.where(np.isfinite(zbuf), zbuf, 1e9)
+        rad = [max(1, int(round(k * scale))) for k in (4, 10)]
+        for rr in rad:
+            for dx, dy in ((rr, 0), (-rr, 0), (0, rr), (0, -rr), (rr, rr), (-rr, -rr), (rr, -rr), (-rr, rr)):
+                diff = zb - _shift(zb, dx, dy, 1e9)
+                occ += np.where((diff > 0) & (diff < 60), np.clip(diff / 24, 0, 1), 0)
+        occ /= 8 * len(rad)
+        col *= (1 - 0.45 * np.clip(occ[hit], 0, 1))[:, None]
 
     t = np.linspace(0, 1, H)[:, None, None]
-    img = (np.array([0.94, 0.955, 0.97]) * (1 - t) + np.array([0.80, 0.84, 0.88]) * t) * np.ones((H, W, 3))
-    hit = ids >= 0
-    img[hit] = shaded[ids[hit]]
+    img = (np.array([0.93, 0.945, 0.955]) * (1 - t) + np.array([0.78, 0.81, 0.84]) * t) * np.ones((H, W, 3))
+    img[hit] = col
+    shaded = np.clip(tcol * (ambient + 0.55 * diffuse)[:, None], 0, 1)
 
-    def draw_lines(sel, zref, bias=1.6):
+    def draw_lines(sel, zref, bias=1.6, alpha=0.55):
         if not sel.any():
             return
         Lw = lines[sel].reshape(-1, 3)
@@ -575,19 +668,18 @@ def render(parts, path, view="iso_front_left", size=1600, ss=2, caption=None):
         x = lp[line_of, 0, 0] + tt * (lp[line_of, 1, 0] - lp[line_of, 0, 0])
         y = lp[line_of, 0, 1] + tt * (lp[line_of, 1, 1] - lp[line_of, 0, 1])
         d = ld[line_of, 0] + tt * (ld[line_of, 1] - ld[line_of, 0])
-        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1))[:ss * ss]:
-            ix, iy = np.floor(x).astype(np.int64) + dx, np.floor(y).astype(np.int64) + dy
-            m = (ix >= 0) & (iy >= 0) & (ix < W) & (iy < H)
-            m[m] &= d[m] <= zref[iy[m], ix[m]] + bias
-            img[iy[m], ix[m]] = cols[line_of[m]]
+        ix, iy = np.floor(x).astype(np.int64), np.floor(y).astype(np.int64)
+        m = (ix >= 0) & (iy >= 0) & (ix < W) & (iy < H)
+        m[m] &= d[m] <= zref[iy[m], ix[m]] + bias
+        img[iy[m], ix[m]] = img[iy[m], ix[m]] * (1 - alpha) + cols[line_of[m]] * alpha
 
     opaque_lines = lalpha >= 0.99
     draw_lines(opaque_lines, zbuf)
     th = idt >= 0  # nearest transparent surface: let the interior show, with a faint sky tint
-    a = np.clip(talpha[idt[th]] * 0.8, 0, 0.85)[:, None]
-    glass = shaded[idt[th]] * 0.8 + np.array([0.70, 0.82, 0.95]) * 0.2
+    a = np.clip(talpha[idt[th]] * 0.9, 0, 0.85)[:, None]
+    glass = shaded[idt[th]] * 0.75 + np.array([0.62, 0.72, 0.82]) * 0.25
     img[th] = img[th] * (1 - a) + glass * a
-    draw_lines(~opaque_lines, np.minimum(zbuf, zt))
+    draw_lines(~opaque_lines, np.minimum(zbuf, zt), alpha=0.35)
 
     out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8))
     if ss > 1:
